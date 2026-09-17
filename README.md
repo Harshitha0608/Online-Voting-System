@@ -284,7 +284,7 @@ The project includes an administrative reset utility (`reset.py`) to safely rest
 4. Seeds the default Administrator account (`admin@admin.com` / `admin123`).
 5. Seeds the 3 default candidates: **Candidate A**, **Candidate B**, **Candidate C** (all active).
 6. Sets election status to **CLOSED**.
-7. Leaves exactly 0 votes and 0 voter accounts.
+7. Leaves exactly 0 votes and 0 regular voter accounts; the default administrator account remains.
 
 ---
 
