@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="row align-items-center mb-4 mt-2">
+  <div class="col">
+    <h1 class="fw-bold mb-1" style="font-size: 1.4rem;">Admin Dashboard</h1>
+    <p class="text-muted small mb-0">Manage the election, candidates, and review vote totals.</p>
+  </div>
+  <div class="col-auto">
+    <span class="text-muted small me-1">Status:</span>
+    {% if voting_status == 'started' %}
+      <span class="badge bg-success">Open</span>
+    {% elif voting_status == 'ended' %}
+      <span class="badge bg-danger">Closed</span>
+    {% else %}
+      <span class="badge bg-secondary">Not Started</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Left column -->
+  <div class="col-lg-6">
+
+    <!-- Election controls -->
+    <div class="card bg-white shadow-sm p-4 mb-4">
+      <h2 class="fw-semibold mb-1" style="font-size: 1rem;">
+        <i class="bi bi-gear me-2 text-secondary"></i>Election Controls
+      </h2>
+      <p class="text-muted small mb-3">Open or close the voting session.</p>
+
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <form method="POST" action="{{ url_for('toggle_voting') }}" class="d-inline">
+          <button type="submit" name="action" value="open"
+                  class="btn btn-success btn-sm"
+                  {% if voting_status == 'started' %}disabled{% endif %}>
+            <i class="bi bi-play-fill me-1"></i>Open Voting
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('toggle_voting') }}" class="d-inline">
+          <button type="submit" name="action" value="close"
+                  class="btn btn-warning btn-sm"
+                  {% if voting_status == 'ended' %}disabled{% endif %}>
+            <i class="bi bi-stop-fill me-1"></i>Close Voting
+          </button>
+        </form>
+      </div>
+
+      <hr class="my-3">
+
+      <h3 class="fw-semibold text-danger mb-1" style="font-size: 0.85rem;">
+        <i class="bi bi-exclamation-triangle me-1"></i>Danger Zone
+      </h3>
+      <p class="text-muted small mb-2">This permanently deletes all recorded votes from the database.</p>
+      <form method="POST" action="{{ url_for('clear_votes') }}"
+            onsubmit="return confirm('Are you sure you want to delete ALL recorded votes? This cannot be undone.');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-trash me-1"></i>Clear All Votes
+        </button>
+      </form>
+    </div>
+
+    <!-- Candidate management -->
+    <div class="card bg-white shadow-sm p-4">
+      <h2 class="fw-semibold mb-1" style="font-size: 1rem;">
+        <i class="bi bi-people me-2 text-secondary"></i>Candidates
+      </h2>
+      <p class="text-muted small mb-3">
+        Inactive candidates are hidden from voters. Deactivating a candidate does not remove historical votes.
+      </p>
+
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th style="width: 90px;">Status</th>
+              <th style="width: 185px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for candidate in candidates %}
+              <tr>
+                <td>
+                  <span class="fw-semibold">{{ candidate[1] }}</span>
+                  {% if candidate[2] %}
+                    <br><small class="text-muted">{{ candidate[2] }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if candidate[3] == 1 %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <form method="POST"
+                          action="{{ url_for('admin_toggle_candidate', candidate_id=candidate[0]) }}"
+                          class="d-inline">
+                      <button type="submit"
+                              class="btn btn-sm {% if candidate[3] == 1 %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                        {% if candidate[3] == 1 %}Deactivate{% else %}Activate{% endif %}
+                      </button>
+                    </form>
+                    {% if voting_status == 'ended' %}
+                      <form method="POST"
+                            action="{{ url_for('admin_delete_candidate', candidate_id=candidate[0]) }}"
+                            class="d-inline"
+                            onsubmit="return confirm('Are you sure you want to permanently delete candidate &quot;{{ candidate[1] }}&quot;? This action is permanent and cannot be undone.');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Permanently delete candidate">
+                          <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                      </form>
+                    {% else %}
+                      <button type="button" class="btn btn-sm btn-outline-danger disabled" disabled
+                              title="Candidates can only be deleted when the election is closed.">
+                        <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">No candidates found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="fw-semibold mb-2" style="font-size: 0.85rem;">Add Candidate</h3>
+      <form method="POST" action="{{ url_for('admin_add_candidate') }}">
+        <div class="mb-2">
+          <input type="text" name="name" class="form-control form-control-sm"
+                 placeholder="Candidate name" required>
+        </div>
+        <div class="mb-2">
+          <input type="text" name="description" class="form-control form-control-sm"
+                 placeholder="Description or party (optional)">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Add Candidate
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Right column: results -->
+  <div class="col-lg-6">
+    <div class="card bg-white shadow-sm p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-semibold mb-0" style="font-size: 1rem;">
+          <i class="bi bi-bar-chart me-2 text-secondary"></i>Vote Tally
+        </h2>
+        <a href="{{ url_for('results') }}" class="btn btn-outline-primary btn-sm">Full View</a>
+      </div>
+      <p class="text-muted small mb-3">Current vote totals grouped by candidate.</p>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Candidate</th>
+              <th class="text-center" style="width: 90px;">Votes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in results %}
+              <tr>
+                <td class="fw-semibold">{{ result[0] }}</td>
+                <td class="text-center fw-bold text-primary fs-5">{{ result[1] }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="2" class="text-center text-muted py-3">No votes have been cast yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Voter Accounts -->
+    <div class="card bg-white shadow-sm p-4 mt-4">
+      <h2 class="fw-semibold mb-1" style="font-size: 1rem;">
+        <i class="bi bi-people me-2 text-secondary"></i>Voter Accounts
+      </h2>
+      <p class="text-muted small mb-3">Registered voters and ballot submission status.</p>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th style="width: 125px;">Voting Status</th>
+              <th style="width: 125px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for voter in voters %}
+              <tr>
+                <td><span class="fw-semibold">{{ voter[1] }}</span></td>
+                <td class="small text-muted">{{ voter[2] }}</td>
+                <td>
+                  {% if voter[3] == 1 %}
+                    <span class="badge bg-success">Ballot Submitted</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Not Yet Voted</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if voter[3] == 1 %}
+                    <button type="button" class="btn btn-sm btn-outline-secondary disabled" disabled
+                            title="Ballot already submitted. Voters with recorded votes cannot be deleted.">
+                      Cannot Delete
+                    </button>
+                  {% else %}
+                    <form method="POST"
+                          action="{{ url_for('admin_delete_user', user_id=voter[0]) }}"
+                          class="d-inline"
+                          onsubmit="return confirm('Are you sure you want to permanently delete voter &quot;{{ voter[1] }}&quot;? This cannot be undone.');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Permanently delete unvoted voter">
+                        <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">No registered voters found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

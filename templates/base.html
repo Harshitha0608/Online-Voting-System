@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %} — Online Voting System</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+
+      <!-- Brand -->
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('home') }}">
+        <i class="bi bi-check-square-fill"></i>
+        Online Voting System
+      </a>
+
+      <!-- Toggler for mobile -->
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navbarContent"
+              aria-controls="navbarContent" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+
+        <!-- Left links -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'home' %}active-link{% endif %}"
+               href="{{ url_for('home') }}">Home</a>
+          </li>
+          {% if session.get('user_id') %}
+            {% if session.get('admin_logged_in') %}
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active-link{% endif %}"
+                   href="{{ url_for('admin_dashboard') }}">
+                  <i class="bi bi-speedometer2 me-1"></i>Admin Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'results' %}active-link{% endif %}"
+                   href="{{ url_for('results') }}">
+                  <i class="bi bi-bar-chart me-1"></i>Results
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'dashboard' %}active-link{% endif %}"
+                   href="{{ url_for('dashboard') }}">
+                  <i class="bi bi-person-circle me-1"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'vote' %}active-link{% endif %}"
+                   href="{{ url_for('vote') }}">
+                  <i class="bi bi-card-checklist me-1"></i>Vote
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+
+        <!-- Right side -->
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          {% if session.get('user_id') %}
+            <li class="nav-item">
+              <span class="badge {% if session.get('admin_logged_in') %}bg-danger{% else %}bg-white text-primary{% endif %} fw-normal px-3 py-2">
+                <i class="bi bi-person-fill me-1"></i>
+                {% if session.get('admin_logged_in') %}Administrator{% else %}{{ session.get('user_name', 'Voter') }}{% endif %}
+              </span>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right me-1"></i>Logout
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'login' %}active-link{% endif %}"
+                 href="{{ url_for('login') }}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm" href="{{ url_for('register') }}">Register</a>
+            </li>
+          {% endif %}
+        </ul>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page content wrapper -->
+  <div class="container page-content">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

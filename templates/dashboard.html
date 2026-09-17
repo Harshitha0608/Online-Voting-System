@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-3">
+  <div class="col-lg-7 col-md-9">
+
+    <!-- Welcome header -->
+    <div class="card bg-white shadow-sm mb-4 p-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h2 class="fw-bold mb-1" style="font-size: 1.35rem;">
+            <i class="bi bi-person-circle text-primary me-2"></i>Welcome, {{ user_name }}
+          </h2>
+          <p class="text-muted mb-0 small">This is your voter portal for the current election.</p>
+        </div>
+        <div>
+          {% if has_voted %}
+            <span class="badge bg-success px-3 py-2">
+              <i class="bi bi-check-circle me-1"></i>Ballot Submitted
+            </span>
+          {% else %}
+            <span class="badge bg-warning text-dark px-3 py-2">
+              <i class="bi bi-hourglass-split me-1"></i>Not Yet Voted
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Status row -->
+    <div class="row g-3 mb-4">
+
+      <!-- Election status -->
+      <div class="col-sm-6">
+        <div class="card bg-white shadow-sm p-3 h-100">
+          <div class="info-card-label">Election Status</div>
+          {% if voting_status == 'started' %}
+            <span class="badge bg-success mb-1">Open</span>
+            {% if has_voted %}
+              <p class="text-muted small mb-0">The polls are open, but you have already submitted your ballot.</p>
+            {% else %}
+              <p class="text-muted small mb-0">The polls are open. You may cast your vote.</p>
+            {% endif %}
+          {% elif voting_status == 'ended' %}
+            <span class="badge bg-danger mb-1">Closed</span>
+            <p class="text-muted small mb-0">The election session has ended.</p>
+          {% else %}
+            <span class="badge bg-secondary mb-1">Not Started</span>
+            <p class="text-muted small mb-0">The election has not started yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Ballot status -->
+      <div class="col-sm-6">
+        <div class="card bg-white shadow-sm p-3 h-100">
+          <div class="info-card-label">Your Ballot</div>
+          {% if has_voted %}
+            <span class="text-success fw-semibold d-block mb-1">
+              <i class="bi bi-check-circle-fill me-1"></i>Vote Recorded
+            </span>
+            <p class="text-muted small mb-0">Your ballot has been submitted for this election.</p>
+          {% else %}
+            <span class="text-warning fw-semibold d-block mb-1">
+              <i class="bi bi-circle me-1"></i>Not Yet Voted
+            </span>
+            <p class="text-muted small mb-0">You have not submitted your ballot yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action card -->
+    <div class="card bg-white shadow-sm p-4 text-center">
+      {% if has_voted %}
+        <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 2rem;"></i>
+        <h4 class="fw-semibold mb-2" style="font-size: 1.1rem;">Your vote has been recorded</h4>
+        <p class="text-muted small mb-0">Each voter may vote only once. Your ballot cannot be changed.</p>
+
+      {% elif voting_status == 'started' %}
+        <i class="bi bi-card-checklist text-primary mb-3" style="font-size: 2rem;"></i>
+        <h4 class="fw-semibold mb-1" style="font-size: 1.1rem;">Ready to cast your vote?</h4>
+        <p class="text-muted small mb-3">
+          {{ active_candidate_count }} candidate{% if active_candidate_count != 1 %}s are{% else %} is{% endif %} available.
+          Review your choice carefully — your vote cannot be changed after submission.
+        </p>
+        <a href="{{ url_for('vote') }}" class="btn btn-primary px-5">
+          <i class="bi bi-card-checklist me-1"></i>Cast My Vote
+        </a>
+
+      {% else %}
+        <i class="bi bi-clock text-secondary mb-3" style="font-size: 2rem;"></i>
+        <h4 class="fw-semibold mb-2 text-muted" style="font-size: 1.1rem;">Voting is not currently available</h4>
+        <p class="text-muted small mb-0">The election is not open. Please check back later.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

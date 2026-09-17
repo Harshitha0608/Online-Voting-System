@@ -1,0 +1,44 @@
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment/secrets
+.env
+.env.*
+
+# SQLite temporary/test artifacts
+test_*.db
+audit_*.db
+*.backup
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor swap files
+*.swp
+*.swo
+
+# Test/coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
