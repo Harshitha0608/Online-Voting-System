@@ -161,7 +161,7 @@ The SQLite schema is managed by `database.py` with foreign key enforcement enabl
 ## Project Structure
 
 ```
-2-2 Project (OVS)/
+Online-Voting-System/
 ├── app.py                  # Flask web application, route handlers, auth decorators
 ├── database.py             # Database access layer, schema definitions, query logic
 ├── reset.py                # Database reset and initial seed utility
